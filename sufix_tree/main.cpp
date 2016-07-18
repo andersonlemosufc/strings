@@ -1,10 +1,10 @@
 #include <iostream>
-
+#include "sufix_tree.h"
 using namespace std;
 
 int main()
 {
-    cout << "Hello World!" << endl;
+    sufix_tree t("xabxac");
     return 0;
 }
 
