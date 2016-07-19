@@ -45,6 +45,7 @@ class sufix_tree
     std::string base_str;
 
     int phase(int i,int nleaves);
+    int phase2(int i,int nleaves);
     void print_node(Node* node);
 
 public:

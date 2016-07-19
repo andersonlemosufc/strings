@@ -72,13 +72,86 @@ int sufix_tree::phase(int i, int nleaves){
     return nleaves;
 }
 
+int sufix_tree::phase2(int i, int nleaves){
+    int ignored = nleaves;
+    std::string sufix = base_str.substr(nleaves,i-nleaves);
+    Node *parent = root,*path_node = root,*new_node,*backup_node;
+    std::unordered_map<char,Node*>::iterator it;
+    int extensions =(int) sufix.size();
+    for (int j = 0; j < extensions; ++j) {
+        std::string current_sufix = sufix.substr(j,extensions-j);
+
+        it = path_node->children.find(current_sufix[0]);
+        int checked = 1;
+        while(it!=path_node->children.end()){
+            parent = path_node;
+            path_node = it->second;
+            int k = 1;
+            while(checked < current_sufix.size() && path_node->beg+k<=path_node->end && current_sufix[checked] == base_str[path_node->beg+k]){
+                checked++;
+                k++;
+            }
+            //caso 3
+            if(checked == current_sufix.size()){
+                std::cout<<"c3 - "<<current_sufix<<std::endl;
+                return nleaves;
+            }
+            else if(path_node->beg+k > path_node->end )
+                it = path_node->children.find(current_sufix[checked++]);
+            else{
+                //caso 2_2 difícil - divergiu no meio de uma aresta
+                char key_backup = base_str[path_node->beg];
+
+                new_node = new Node(path_node->beg,path_node->beg+k-1);
+                char aux = base_str[path_node->beg+k];
+                new_node->children[base_str[path_node->beg+k]] = path_node;
+                path_node->beg+=k;
+                //nova folha com os caracteres que sobraram
+                new_node->children[current_sufix[checked]] = new Node(ignored+j+checked,base_str.size());
+                nleaves++;
+                std::cout<<current_sufix[checked]<<" c2_2 novo nó-> ";
+                print_node(new_node);
+                std::cout<<std::endl<<"pai : "<<current_sufix[checked]<<" ";
+                print_node(new_node->children[current_sufix[checked]]);
+                std::cout<<std::endl<<"pai : "<<aux<<" ";
+                print_node(path_node);
+                std::cout<<"  k = "<<ignored+j+checked-1<<"\n";
+                //insere o novo nó como interno no lugar do antigo
+                parent->children[key_backup] = new_node;
+
+                if(backup_node!=nullptr)
+                   backup_node->sufix_link = new_node;
+
+                if(new_node->edge_size() == 1){
+                    new_node->sufix_link = root;
+                    backup_node = nullptr;
+                }else
+                    backup_node = new_node;
+
+                break;
+            }
+        }
+        // caso 2 simples - apendas criar uma folha se quebrar a condição loop
+        if(it==path_node->children.end()){
+            path_node->children[current_sufix[checked-1]] = new Node(ignored+j+checked-1,(int)base_str.size());
+            std::cout<<"c2_1 "<<i<<current_sufix<<": ";
+            print_node(path_node->children[current_sufix[checked-1]]);
+            std::cout<<std::endl;
+            nleaves++;
+        }
+        path_node = root;
+    }
+    return nleaves;
+
+}
+
 sufix_tree::sufix_tree(std::string str):base_str(str){
     root = new Node();
     int nleaves = 0;
-    for (int var = 1; var <= (int)10; ++var) {
-        nleaves = phase(var,nleaves);
+    for (int var = 1; var <= (int)base_str.size(); ++var) {
+        nleaves = phase2(var,nleaves);
     }
-    print_node(root->children['a']->children['x']);
+    print_node(root->children['b']->children['x']);
     std::cout<<std::endl;
 }
 
