@@ -57,6 +57,10 @@ Trie::Trie(){
     this->raiz = new No();
 }
 
+Trie::~Trie(){    
+    delete this->raiz;
+}
+
 
 bool Trie::buscar(const string &chave){
     return buscar_recursivo(this->raiz, chave, 0);
